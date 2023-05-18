@@ -7,7 +7,8 @@ const COLLIDER_SIZE = 16;
 const ANGULAR_VELOCITY = 300;
 const MAX_VELOCITY = 400;
 const DRAG = 0.3;
-const INVULNERABLE_DURATION = 3;
+const SPAWN_DURATION = 3;
+const POINTS = 1000;
 
 export default class Ship extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, id, shieldObject) {
@@ -17,7 +18,7 @@ export default class Ship extends Phaser.Physics.Arcade.Sprite {
         this.texture = Resources.spritesheet["ship" + id].key;
         this.id = id;
         this.scene = scene;
-        this.points = 1000;
+        this.points = POINTS;
         this.shieldObject = shieldObject;
         this.rotation = 0;
         this.oldPosition = {
@@ -158,13 +159,13 @@ export default class Ship extends Phaser.Physics.Arcade.Sprite {
             fx.outerStrength = 0;
             this.scene.tweens.add({
                 targets: fx,
-                duration: INVULNERABLE_DURATION * 1000 * .5,
+                duration: SPAWN_DURATION * 1000 * .5,
                 outerStrength: 5,
                 yoyo: true,
                 ease: 'sine.inout'
             });
 
-            this.scene.time.delayedCall(INVULNERABLE_DURATION * 1000, this.invulnerable, [false], this);
+            this.scene.time.delayedCall(SPAWN_DURATION * 1000, this.invulnerable, [false], this);
         }
     }
 }

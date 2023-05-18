@@ -32,7 +32,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update(time, delta) {
-        console.log(this.game.loop.actualFps);
         this.updateInput();
         this.updatePlayers();
         this.wrapGameObjects();
@@ -136,13 +135,23 @@ export default class GameScene extends Phaser.Scene {
     updateInput() {
         if (!this.player || !this.player.active) return;
 
-        if (this.cursors.left.isDown) {
+        let direction = (this.cursors.left.isDown ? -1 : 0) + (this.cursors.right.isDown ? 1 : 0);
+
+        if (direction === -1) {
             this.player.rotateCounterClockwise();
-        } else if (this.cursors.right.isDown) {
+        } else if (direction === 1) {
             this.player.rotateClockwise();
         } else {
             this.player.rotateStop();
         }
+
+        // if (this.cursors.left.isDown) {
+        //     this.player.rotateCounterClockwise();
+        // } else if (this.cursors.right.isDown) {
+        //     this.player.rotateClockwise();
+        // } else {
+        //     this.player.rotateStop();
+        // }
 
         if (this.cursors.up.isDown) {
             this.player.thrust();
