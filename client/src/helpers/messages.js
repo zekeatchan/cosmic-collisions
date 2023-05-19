@@ -1,0 +1,15 @@
+export default {
+    CONNECT: 'connect',
+    CONNECTION: 'connection',
+    KEY_INPUT: 'keyInput',
+    DISCONNECT: 'disconnect',
+    NEW_PLAYER: 'newPlayer',
+    MAX_PLAYERS: 'maxPlayers',
+    INIT: 'init',
+    LOBBY_READY: 'lobbyReady',
+    PLAYER_READY: 'playerReady',
+    GAME_START: 'gameStart',
+    GAME_OVER: 'gameOver',
+    UPDATE: 'update',
+    SHIELD: 'shield',
+}

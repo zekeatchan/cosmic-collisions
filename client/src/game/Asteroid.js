@@ -14,12 +14,12 @@ const OWNER_COOLDOWN = 3;
 
 export default class Asteroid extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, size, position) {
-        if (!position) {
-            position = {
-                x: Math.round(Math.random()) ? Config.scale.width + BOUNDS : -BOUNDS,
-                y: Math.round(Math.random()) ? Config.scale.height + BOUNDS : -BOUNDS
-            }
-        }
+        // if (!position) {
+        //     position = {
+        //         x: Math.round(Math.random()) ? Config.scale.width + BOUNDS : -BOUNDS,
+        //         y: Math.round(Math.random()) ? Config.scale.height + BOUNDS : -BOUNDS
+        //     }
+        // }
         super(scene, position.x, position.y, ASTEROID_SIZES[size].texture);
 
         this.size = size;
@@ -35,30 +35,21 @@ export default class Asteroid extends Phaser.Physics.Arcade.Sprite {
     }
 
     init() {
-        this.body
-            .setCircle(ASTEROID_SIZES[this.size].colliderSize, 0, this.body.halfHeight - this.body.halfWidth)
-            .setBounce(1, 1);
+        // this.body
+        //     .setCircle(ASTEROID_SIZES[this.size].colliderSize, 0, this.body.halfHeight - this.body.halfWidth)
+        //     .setBounce(1, 1);
 
         const angularVelocity = Phaser.Math.Between(-ANGULAR_VELOCITY, ANGULAR_VELOCITY);
 
-        this.angle = Phaser.Math.Between(0, 359);
-        const direction = this.scene.physics.velocityFromRotation(this.rotation, 1)
-        const acceleration = Phaser.Math.Between(ACCELERATION_MINIMUM, ACCELERATION_MAXIMUM) * (3-this.size);
-        const velocity = this.body.velocity;
-        velocity.x += direction.x * acceleration;
-        velocity.y += direction.y * acceleration;
+        // this.angle = Phaser.Math.Between(0, 359);
+        // const direction = this.scene.physics.velocityFromRotation(this.rotation, 1)
+        // const acceleration = Phaser.Math.Between(ACCELERATION_MINIMUM, ACCELERATION_MAXIMUM) * (3-this.size);
+        // const velocity = this.body.velocity;
+        // velocity.x += direction.x * acceleration;
+        // velocity.y += direction.y * acceleration;
 
         this.setAngularVelocity(angularVelocity);
-        this.setVelocity(velocity.x, velocity.y);
-    }
-
-    update() {
-        if (!this.active) return;
-        this.rotation += Config.game.FLOATER_SPEED;
-
-        const range = Config.game.FLOATER_Y + (Math.sin(this.rotation) * Config.game.FLOATER_RANGE);
-        this.y = Config.scale.centerY + (range * this.side);
-        if (this.x < -150) this.sleep();
+        // this.setVelocity(velocity.x, velocity.y);
     }
 
     getSize() {

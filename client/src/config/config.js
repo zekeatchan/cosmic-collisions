@@ -48,6 +48,7 @@ export default {
         }
     },
     scenes: {
+        Audio: 'Audio',
         Boot: 'Boot',
         GameController: 'GameController',
         Preloader: 'Preloader',
@@ -74,6 +75,8 @@ export default {
         }
     },
     game: {
-        scores: []
+        scores: [],
+        playerId: '',
+        players: []
     }
 };

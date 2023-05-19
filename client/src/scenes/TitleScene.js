@@ -24,6 +24,7 @@ export default class TitleScene extends Phaser.Scene {
 
     gotoLobbyScene() {
         // this.scene.get(Config.scenes.Audio).playMusic();
+        this.scene.get(Config.scenes.Audio).connectSocket();
         this.scene.start(Config.scenes.Lobby);
     }
 };

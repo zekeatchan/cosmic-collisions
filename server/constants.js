@@ -22,6 +22,7 @@ const ASTEROIDS = {
     accelerationMinimum: 10,
     accelerationMaximum: 100,
     bounds: 32,
+    bounce: 1,
     ownerCooldown: 3,
     colliderSize: [8, 16, 32],
 }
@@ -37,6 +38,25 @@ const SHIP = {
     velocityMaximum: 400,
     drag: 0.3,
     spawnDuration: 3 * 1000,
+    bounce: 1,
+    DEAD: 0,
+    INVULNERABLE: 1,
+    LIVE: 2,
+}
+
+const IO = {
+    CONNECTION: 'connection',
+    KEY_INPUT: 'keyInput',
+    DISCONNECT: 'disconnect',
+    NEW_PLAYER: 'newPlayer',
+    MAX_PLAYERS: 'maxPlayers',
+    INIT: 'init',
+    LOBBY_READY: 'lobbyReady',
+    PLAYER_READY: 'playerReady',
+    GAME_START: 'gameStart',
+    GAME_OVER: 'gameOver',
+    UPDATE: 'update',
+    SHIELD: 'shield',
 }
 
 module.exports = {
@@ -45,4 +65,5 @@ module.exports = {
     ASTEROIDS,
     SHIELD,
     SHIP,
+    IO,
 }

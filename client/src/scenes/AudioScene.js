@@ -1,7 +1,7 @@
 import 'phaser';
 import Config from '../config/config';
 import Resources from '../config/resources';
-// import UI from '../Ui/UiElements.js';
+import SocketIO from '../helpers/SocketIO';
 
 export default class AudioScene extends Phaser.Scene {
     constructor() {
@@ -24,5 +24,25 @@ export default class AudioScene extends Phaser.Scene {
         } else {
             this.music.play();
         }
+    }
+
+    connectSocket() {
+        this.SocketHandler = new SocketIO(this);
+    }
+
+    getSocket() {
+        return this.socket;
+    }
+
+    setLobbyReady() {
+        this.scene.get(Config.scenes.Lobby).ready();
+    }
+
+    gameStart() {
+        this.scene.get(Config.scenes.Lobby).gotoGameScene();
+    }
+
+    gameUpdate(state) {
+        this.scene.get(Config.scenes.Game).updateGameState(state);
     }
 };

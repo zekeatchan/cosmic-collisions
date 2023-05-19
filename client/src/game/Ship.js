@@ -11,9 +11,9 @@ const SPAWN_DURATION = 3;
 const POINTS = 1000;
 
 export default class Ship extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, id, shieldObject) {
+    constructor(scene, position, id, shieldObject) {
 
-        super(scene, Config.scale.width * Math.random(), Config.scale.height * Math.random(), Resources.spritesheet["ship" + id].key);
+        super(scene, position.x, position.y, Resources.spritesheet["ship" + id].key);
 
         this.texture = Resources.spritesheet["ship" + id].key;
         this.id = id;
@@ -119,7 +119,7 @@ export default class Ship extends Phaser.Physics.Arcade.Sprite {
     }
 
     respawn() {
-        const timer = this.scene.time.delayedCall(3000, this.reset, [], this);
+        const timer = this.scene.time.delayedCall(SPAWN_DURATION * 1000, this.reset, [], this);
     }
 
     reset() {

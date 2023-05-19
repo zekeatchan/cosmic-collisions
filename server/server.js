@@ -1,135 +1,138 @@
-const GameConfig = require('../client/src/config/config');
-const express = require('express');
-const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io').listen(server);
+const { createGameState, game } = require('./game');
+const express = require("express");
+const { createServer } = require("http");
+const cors = require('cors');
 
-const CONSTANTS = require('./constants');
-const KeyCodes = require(Phaser.Input.Keyboard.KeyCodes);
+const app = express();
+const server = createServer(app);
+const io = require('socket.io')(server);
+const port = process.env.PORT || 8081;
+
+const { GAME, IO } = require('./constants');
 
 const players = {};
-const asteroids = {};
-const state = {};
 const clientRooms = {};
 const defaultRoomName = "ABC12";
 
-app.use(express.static(__dirname + '/public'));
+let gameState;
+let gameWorld;
+
+app.use(cors());
+// app.use(serveStatic(__dirname + "/client/dist"));
+app.use(express.static(__dirname + '/dist'));
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/dist/index.html');
+    // res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', socket => {
+io.on(IO.CONNECTION, (socket) => {
     console.log('a user connected: ', socket.id);
+    console.log('Users: ', io.engine.clientsCount);
 
-    socket.on('keyInput', onInput);
-    socket.on('newGame', onNewGame);
-    socket.on('joinGame', onJoinGame);
-    socket.on('disconnect', onDisconnect);
+    socket.on(IO.KEY_INPUT, (input) => {
+        players[socket.id].input = input;
+    });
 
-    function onNewGame(key) {
-        let roomName = defaultRoomName;
-        // let roomName = randomRoomId(5);
-        clientRooms[socket.id] = roomName;
-        socket.emit('gameId', roomName);
+    socket.on(IO.DISCONNECT, () => {
+        console.log('user disconnected: ', socket.id);
+        console.log('Users: ', io.engine.clientsCount);
+        io.emit(IO.DISCONNECT, socket.id);
+        delete players[socket.id];
+    });
 
-        state[roomName] = initGame();
+    socket.on(IO.PLAYER_READY, () => {
+        players[socket.id].ready = true;
 
-        socket.join(roomName);
-        socket.playerId = 1;
-        socket.emit('init', socket.playerId);
+        let playersReady = true;
+
+        for (index in players) {
+            const player = players[index];
+            if (!player.ready) playersReady = false;
+        }
+
+        if (playersReady) startGame(players);
+    });
+
+    if (io.engine.clientsCount > GAME.maxPlayers) {
+        socket.emit(IO.MAX_PLAYERS);
+        return;
+    };
+
+    players[socket.id] = {
+        input: {
+            space: false,
+            up: false,
+            left: false,
+            right: false,
+        },
+        ready: false,
+    };
+
+    socket.emit(IO.INIT, socket.id);
+    
+    if (io.engine.clientsCount > 1) io.emit(IO.LOBBY_READY);
+
+    function startGame(playerlist) {
+        gameState = createGameState(playerlist);
+        gameWorld = game(io, gameState, playerlist);
+        // io.emit(IO.NEW_PLAYER, gameState.players);
+        io.emit(IO.GAME_START, gameState.players);
     }
 
-    function onJoinGame(roomName) {
-        roomName = defaultRoomName;
-        const room = io.sockets.adapter.rooms[roomName];
+    function onDisconnect() {
 
-        let allUsers;
-        if (room) allUsers = room.sockets;
-
-        let numClients = 0;
-        if (allUsers) numClients = Object.keys(allUsers).length;
-
-        if (numClients === 0) {
-            socket.emit('unknownCode');
-            return;
-        } else if (numClients >= CONSTANTS.GAME.maxPlayers) {
-            socket.emit('tooManyPlayers');
-            return;
-        }
-
-        clientRooms[socket.id] = roomName;
-
-        socket.join(roomName);
-        socket.playerId = numClients;
-        socket.emit('init', socket.playerId);
-
-        startGameInterval(roomName);
     }
 
-    function onDisconnect(key) {
-        console.log('user disconnected: ', socket.playerId);
-        io.emit('disconnect', socket.playerId);
-    }
+    function onInput(input) {
+        // const roomName = clientRooms[socket.id];
+        // if (!roomName) return;
 
-    function onInput(key) {
-        const roomName = clientRooms[socket.id];
-        if (!roomName) {
-            return;
-        }
+        // if (key.keyCode === KeyCodes.LEFT && key.isDown) {
+        //     this.player.rotateCounterClockwise();
+        // } else if (key.keyCode === KeyCodes.RIGHT && key.isDown) {
+        //     this.player.rotateClockwise();
+        // } else {
+        //     this.player.rotateStop();
+        // }
 
-        if (key.keyCode === KeyCodes.LEFT && key.isDown) {
-            this.player.rotateCounterClockwise();
-        } else if (key.keyCode === KeyCodes.RIGHT && key.isDown) {
-            this.player.rotateClockwise();
-        } else {
-            this.player.rotateStop();
-        }
+        // if (key.keyCode === KeyCodes.UP && key.isDown) {
+        //     this.player.thrust();
+        // } else {
+        //     this.player.idle();
+        // }
 
-        if (key.keyCode === KeyCodes.UP && key.isDown) {
-            this.player.thrust();
-        } else {
-            this.player.idle();
-        }
-
-        if (this.cursors.space.isDown) {
-            this.player.activateShield();
-        }
+        // if (this.cursors.space.isDown) {
+        //     this.player.activateShield();
+        // }
     }
 });
-
-function randomRoomId(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var index = 0; index < length; index++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-}
 
 function startGameInterval(roomName) {
-    const intervalId = setInterval(() => {
-        const inPlay = gameLoop(state[roomName]);
+    // let lastUpdate = Date.now();
 
-        if (inPlay) {
-            update(roomName, state[roomName])
-        } else {
-            gameOver(roomName, winner);
-            state[roomName] = null;
+    const intervalId = setInterval(() => {
+        // const now = Date.now();
+        // const delta = now - lastUpdate;
+
+        const inPlay = game();
+        // const inPlay = gameUpdate(delta);
+
+        if (!inPlay) {
+            gameOver();
             clearInterval(intervalId);
         }
-    }, 1000 / CONSTANTS.GAME.frameRate);
+    }, 1000 / GAME.frameRate);
 }
 
-function update(room, gameState) {
-    server.sockets.in(room).emit('update', JSON.stringify(gameState));
+// function update(room, gameState) {
+//     server.sockets.in(room).emit('update', JSON.stringify(gameState));
+// }
+
+function gameOver() {
+    server.sockets.in(room).emit(IO.GAME_OVER);
 }
 
-function gameOver(room) {
-    server.sockets.in(room).emit('gameOver');
-}
-
-server.listen(8081, function () {
+server.listen(port, function () {
     console.log(`Listening on ${server.address().port}`);
 });
