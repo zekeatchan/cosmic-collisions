@@ -1,4 +1,3 @@
-const { createGameState, game } = require('./game');
 const express = require("express");
 const { createServer } = require("http");
 const cors = require('cors');
@@ -9,12 +8,10 @@ const io = require('socket.io')(server);
 const port = process.env.PORT || 8081;
 
 const { GAME, IO } = require('./constants');
+const Game = require('./game');
 
 const players = {};
-const clientRooms = {};
-const defaultRoomName = "ABC12";
 
-let gameState;
 let gameWorld;
 
 app.use(cors());
@@ -39,6 +36,16 @@ io.on(IO.CONNECTION, (socket) => {
         console.log('Users: ', io.engine.clientsCount);
         io.emit(IO.DISCONNECT, socket.id);
         delete players[socket.id];
+
+        if (io.engine.clientsCount === 0) {
+            // gameWorld.gameStop();
+            for (index in players) {
+                delete players[index];
+            }
+
+            gameWorld = undefined;
+            players = {};
+        }
     });
 
     socket.on(IO.PLAYER_READY, () => {
@@ -74,64 +81,10 @@ io.on(IO.CONNECTION, (socket) => {
     if (io.engine.clientsCount > 1) io.emit(IO.LOBBY_READY);
 
     function startGame(playerlist) {
-        gameState = createGameState(playerlist);
-        gameWorld = game(io, gameState, playerlist);
-        // io.emit(IO.NEW_PLAYER, gameState.players);
-        io.emit(IO.GAME_START, gameState.players);
-    }
-
-    function onDisconnect() {
-
-    }
-
-    function onInput(input) {
-        // const roomName = clientRooms[socket.id];
-        // if (!roomName) return;
-
-        // if (key.keyCode === KeyCodes.LEFT && key.isDown) {
-        //     this.player.rotateCounterClockwise();
-        // } else if (key.keyCode === KeyCodes.RIGHT && key.isDown) {
-        //     this.player.rotateClockwise();
-        // } else {
-        //     this.player.rotateStop();
-        // }
-
-        // if (key.keyCode === KeyCodes.UP && key.isDown) {
-        //     this.player.thrust();
-        // } else {
-        //     this.player.idle();
-        // }
-
-        // if (this.cursors.space.isDown) {
-        //     this.player.activateShield();
-        // }
+        gameWorld = new Game(io, playerlist);
+        io.emit(IO.GAME_START, gameWorld.getPlayers());
     }
 });
-
-function startGameInterval(roomName) {
-    // let lastUpdate = Date.now();
-
-    const intervalId = setInterval(() => {
-        // const now = Date.now();
-        // const delta = now - lastUpdate;
-
-        const inPlay = game();
-        // const inPlay = gameUpdate(delta);
-
-        if (!inPlay) {
-            gameOver();
-            clearInterval(intervalId);
-        }
-    }, 1000 / GAME.frameRate);
-}
-
-// function update(room, gameState) {
-//     server.sockets.in(room).emit('update', JSON.stringify(gameState));
-// }
-
-function gameOver() {
-    server.sockets.in(room).emit(IO.GAME_OVER);
-}
 
 server.listen(port, function () {
     console.log(`Listening on ${server.address().port}`);

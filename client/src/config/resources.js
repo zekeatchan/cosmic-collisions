@@ -3,16 +3,21 @@ import 'phaser';
 
 export default {
     'audio': {
-        // score: 
-        // {
-        //     key: 'score',
-        //     args: ['assets/sounds/score.mp3', 'assets/sounds/score.m4a', 'assets/sounds/score.ogg']
-        // },
-        // music: 
-        // {
-        //     key: 'music',
-        //     args: ['assets/sounds/music.mp3', 'assets/sounds/music.m4a', 'assets/sounds/music.ogg']
-        // },
+        collide: 
+        {
+            key: 'collide',
+            args: ['assets/audio/collide.ogg']
+        },
+        explosion: 
+        {
+            key: 'explosion',
+            args: ['assets/audio/explosion.ogg']
+        },
+        shield: 
+        {
+            key: 'shield',
+            args: ['assets/audio/shield.ogg']
+        },
     },
     'image': {
         buttonPlay:

@@ -10,6 +10,9 @@ export default class AudioScene extends Phaser.Scene {
 
     create() {
         // this.music = this.sound.add(Resources.audio.music.key, { loop: true });
+        this.audioCollide = this.sound.add(Resources.audio.collide.key);
+        this.audioExplosion = this.sound.add(Resources.audio.explosion.key);
+        this.audioShield = this.sound.add(Resources.audio.shield.key);
     }
 
     playMusic() {
@@ -52,10 +55,12 @@ export default class AudioScene extends Phaser.Scene {
 
     destroyAsteroid(asteroidId) {
         this.scene.get(Config.scenes.Game).destroyAsteroid(asteroidId);
+        this.audioExplosion.play();
     }
 
     destroyPlayer(playerId) {
         this.scene.get(Config.scenes.Game).destroyPlayer(playerId);
+        // this.audioExplosion.play();
     };
 
     respawnPlayer(playerId) {
@@ -64,5 +69,6 @@ export default class AudioScene extends Phaser.Scene {
 
     activateShield(playerId) {
         this.scene.get(Config.scenes.Game).activateShield(playerId);
+        this.audioShield.play();
     }
 };

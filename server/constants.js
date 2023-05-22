@@ -29,7 +29,8 @@ const ASTEROIDS = {
 const SHIELD = {
     colliderSize: 32,
     cooldown: 3 * 1000,
-    duration: 1 * 1000,
+    duration: 1.5 * 1000,
+    bounce: 1,
 }
 const SHIP = {
     acceleration: 10,
@@ -57,6 +58,10 @@ const IO = {
     GAME_OVER: 'gameOver',
     UPDATE: 'update',
     SHIELD: 'shield',
+    ASTEROID_OWNED: 'asteroidOwned',
+    DESTROY_ASTEROID: 'destroyAsteroid',
+    DESTROY_PLAYER: 'destroyPlayer',
+    RESPAWN_PLAYER: 'respawnPlayer',
 }
 
 module.exports = {
