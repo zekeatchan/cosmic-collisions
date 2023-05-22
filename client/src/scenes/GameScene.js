@@ -37,11 +37,15 @@ export default class GameScene extends Phaser.Scene {
 
     updateGameState(state) {
         this.gameState = state;
+        // const playersState = this.gameState.players;
+        // for (let id in playersState) {
+        //     console.log(id, playersState[id].position);
+        // }
     }
 
     update(time, delta) {
         this.updateInput();
-        this.updateGameState();
+        this.updateGameObjects();
         // this.wrapGameObjects();
     }
 
@@ -60,8 +64,9 @@ export default class GameScene extends Phaser.Scene {
         for (let id in this.players) {
             index++;
             const player = this.players[id];
-            player.shield = new Shield(this, index + 1);
-            player.ship = new Ship(this, player.position, index + 1, player.shield);
+            player.shield = new Shield(this, index);
+            player.ship = new Ship(this, player.position, index, player.shield);
+            player.shield.updatePosition(player.ship.getPosition());
 
             if (id === Config.game.playerId) player.shield.makePlayer();
         }
@@ -83,7 +88,6 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.shields, this.asteroidController.getAsteroidsList(), this.collideWithShields, null, this);
         this.physics.add.overlap(this.players, this.asteroidController.getAsteroidsList(), this.playerAsteroidCollision, null, this);
         this.physics.add.overlap(this.asteroidController.getAsteroidsList(), null, this.asteroidsCollision, null, this);
-        this.physics.world.wrap
     }
 
     initClock() {
@@ -152,7 +156,6 @@ export default class GameScene extends Phaser.Scene {
     updateInput() {
         // if (!this.player || !this.player.active) return;
 
-        let direction = (this.cursors.left.isDown ? -1 : 0) + (this.cursors.right.isDown ? 1 : 0);
         const input = {
             space: false,
             up: false,
@@ -160,9 +163,11 @@ export default class GameScene extends Phaser.Scene {
             right: false,
         }
 
-        if (direction === -1) {
+        if (this.cursors.left.isDown) {
             input.left = true;
-        } else if (direction === 1) {
+        }
+
+        if (this.cursors.right.isDown) {
             input.right = true;
         }
 
@@ -172,12 +177,6 @@ export default class GameScene extends Phaser.Scene {
 
         if (this.cursors.space.isDown) {
             input.space = true;
-        }
-
-        for (let index in input) {
-            if (input[index] === true) {
-                break;
-            }
         }
 
         this.socket.emit(IO_MESSAGE.KEY_INPUT, input);
@@ -201,55 +200,89 @@ export default class GameScene extends Phaser.Scene {
         // }
     }
 
-    destroyAsteroid(asteroid) {
-        new ExplosionAsteroids(this, asteroid.size, asteroid.position);
-        this.asteroidController.destroyAsteroid(asteroid);
+    asteroidOwned(asteroidId, playerId) {
+        const asteroid = this.asteroids[asteroidId];
+        const playersState = this.gameState.players;
+        const player = this.players[playerId];
+        const ship = player?.ship;
+
+        if (!ship || !asteroid) return;
+        
+        asteroid.setPlayerId(ship.id);
     }
 
-    // addPlayer(id) {
-    //     const shield = new Shield(this, id);
-    //     this.players.push(new Ship(this, id, shield));
-    // this.shields.push(shield);
-    // this.players.push(new Ship(this, id, shield));
-    // }
-
-    destroyPlayer(ship) {
-        new ExplosionShips(this, ship.id, ship.getPosition());
-        ship.destroyShip();
+    destroyAsteroid(asteroidId) {
+        const asteroid = this.asteroids[asteroidId];
+        if (asteroid) {
+            new ExplosionAsteroids(this, asteroid.size, asteroid.getPosition());
+            asteroid.destroy();
+        }
+        // this.asteroidController.destroyAsteroid(asteroid);
     }
 
-    updateScore(playerId, points) {
-        const playerScore = this.scores[playerId - 1];
-        playerScore.score += points;
-        playerScore.textField.setText(`Player ${playerId}: ${playerScore.score}`);
+    destroyPlayer(playerId) {
+        const playersState = this.gameState.players;
+        const player = this.players[playerId];
+        const ship = player?.ship;
+        
+        if (ship) {
+            new ExplosionShips(this, ship.id, ship.getPosition());
+            ship.destroyShip();
+        }
     }
 
-    updateGameState() {
+    respawnPlayer(playerId) {
+        const playersState = this.gameState.players;
+        const player = this.players[playerId];
+        const ship = player?.ship;
+        
+        if (ship) ship.respawn();
+    }
+
+    updateScore(index, points) {
+        const playerScore = this.scores[index - 1];
+        // if (playerScore.score === points) return;
+        playerScore.score = points;
+        playerScore.textField.setText(`Player ${index}: ${playerScore.score}`);
+    }
+
+    updateGameObjects() {
         if (!this.gameState) return;
 
-        const players = this.gameState.players;
-        for (let id in players) {
-            const player = players[id];
-            const shield = this.players[id].shield;
+        const playersState = this.gameState.players;
+        
+        for (let id in playersState) {
+            const playerState = playersState[id];
+            const player = this.players[id];
+            const ship = player?.ship;
+            const shield = player?.shield;
+            if (!player || !player.ship) continue;
 
-            const ship = this.players[id].ship;
-            if (ship) {
-                ship.rotation = player.rotation;
-                ship.setPosition(player.position.x, player.position.y);
-            }
+            ship.setAngle(playerState.rotation);
+            ship.setPosition(playerState.position.x, playerState.position.y);
+            shield.updatePosition(playerState.position);
+
+            this.updateScore(ship.id, playerState.score);
         }
 
-        const asteroids = this.gameState.asteroids;
-        for (let id in asteroids) {
-            const asteroid = asteroids[id];
+        const asteroidsState = this.gameState.asteroids;
+        for (let id in asteroidsState) {
+            const asteroidState = asteroidsState[id];
 
             if (!this.asteroids[id]) {
-                const asteroid = new Asteroid(this, asteroid.size, asteroid.position);
+                const asteroid = new Asteroid(this, asteroidState.size, asteroidState.position);
                 this.asteroids[id] = asteroid;
             } else {
-                this.asteroids[id].setPosition(asteroid.position.x, asteroid.position.y);
+                this.asteroids[id].setPosition(asteroidState.position.x, asteroidState.position.y);
             }
         }
+    }
+
+    activateShield(playerId) {
+        const player = this.players[playerId];
+        const shield = player?.shield;
+
+        if (shield) shield.activate();
     }
 
     gameOver() {
