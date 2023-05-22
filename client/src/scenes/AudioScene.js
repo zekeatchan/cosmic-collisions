@@ -14,7 +14,7 @@ export default class AudioScene extends Phaser.Scene {
 
     playMusic() {
         if (this.music.isPlaying) return;
-        
+
         this.music.play();
     }
 
@@ -44,5 +44,25 @@ export default class AudioScene extends Phaser.Scene {
 
     gameUpdate(state) {
         this.scene.get(Config.scenes.Game).updateGameState(state);
+    }
+
+    asteroidOwned(asteroidId, playerId) {
+        this.scene.get(Config.scenes.Game).asteroidOwned(asteroidId, playerId);
+    }
+
+    destroyAsteroid(asteroidId) {
+        this.scene.get(Config.scenes.Game).destroyAsteroid(asteroidId);
+    }
+
+    destroyPlayer(playerId) {
+        this.scene.get(Config.scenes.Game).destroyPlayer(playerId);
+    };
+
+    respawnPlayer(playerId) {
+        this.scene.get(Config.scenes.Game).respawnPlayer(playerId);
+    }
+
+    activateShield(playerId) {
+        this.scene.get(Config.scenes.Game).activateShield(playerId);
     }
 };
