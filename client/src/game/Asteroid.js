@@ -26,7 +26,7 @@ export default class Asteroid extends Phaser.Physics.Arcade.Sprite {
         this.points = ASTEROID_SIZES[size].points;
         this.scene = scene;
         this.rotation = 0;
-        this.ownerId;
+        this.playerId;
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -40,6 +40,7 @@ export default class Asteroid extends Phaser.Physics.Arcade.Sprite {
         //     .setBounce(1, 1);
 
         const angularVelocity = Phaser.Math.Between(-ANGULAR_VELOCITY, ANGULAR_VELOCITY);
+        this.setAngularVelocity(angularVelocity);
 
         // this.angle = Phaser.Math.Between(0, 359);
         // const direction = this.scene.physics.velocityFromRotation(this.rotation, 1)
@@ -48,7 +49,6 @@ export default class Asteroid extends Phaser.Physics.Arcade.Sprite {
         // velocity.x += direction.x * acceleration;
         // velocity.y += direction.y * acceleration;
 
-        this.setAngularVelocity(angularVelocity);
         // this.setVelocity(velocity.x, velocity.y);
     }
 
@@ -67,14 +67,14 @@ export default class Asteroid extends Phaser.Physics.Arcade.Sprite {
         this.destroy(true);
     }
 
-    setOwnerId(id) {
-        this.ownerId = id;
+    setPlayerId(id) {
+        this.playerId = id;
         this.setTint(Config.playerTint[id - 1]);
         this.scene.time.delayedCall(OWNER_COOLDOWN * 1000, this.removeOwner, [], this);
     }
 
     removeOwner() {
-        this.ownerId = undefined;
+        this.playerId = undefined;
         this.clearTint();
     }
 }
