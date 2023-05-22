@@ -41,5 +41,25 @@ export default class SocketIO {
             scene.gameUpdate(gameState);
         });
 
+        scene.socket.on(IO_MESSAGE.ASTEROID_OWNED, (asteroidId, playerId) => {
+            scene.asteroidOwned(asteroidId, playerId);
+        });
+
+        scene.socket.on(IO_MESSAGE.DESTROY_ASTEROID, (asteroidId) => {
+            scene.destroyAsteroid(asteroidId);
+        });
+
+        scene.socket.on(IO_MESSAGE.DESTROY_PLAYER, (playerId) => {
+            scene.destroyPlayer(playerId);
+        });
+
+        scene.socket.on(IO_MESSAGE.RESPAWN_PLAYER, (playerId) => {
+            scene.respawnPlayer(playerId);
+        });
+
+        scene.socket.on(IO_MESSAGE.SHIELD, (playerId) => {
+            scene.activateShield(playerId);
+        });
+
     }
 }
