@@ -12,4 +12,8 @@ export default {
     GAME_OVER: 'gameOver',
     UPDATE: 'update',
     SHIELD: 'shield',
+    ASTEROID_OWNED: 'asteroidOwned',
+    DESTROY_ASTEROID: 'destroyAsteroid',
+    DESTROY_PLAYER: 'destroyPlayer',
+    RESPAWN_PLAYER: 'respawnPlayer',
 }
