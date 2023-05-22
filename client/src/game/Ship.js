@@ -111,20 +111,20 @@ export default class Ship extends Phaser.Physics.Arcade.Sprite {
         this.setActive(false);
         this.setVisible(false);
         this.shieldObject.show(false);
-        this.respawn();
+        // this.respawn();
     }
 
     activateShield() {
         this.shieldObject.activate();
     }
 
-    respawn() {
-        const timer = this.scene.time.delayedCall(SPAWN_DURATION * 1000, this.reset, [], this);
-    }
+    // respawn() {
+    //     const timer = this.scene.time.delayedCall(SPAWN_DURATION * 1000, this.reset, [], this);
+    // }
 
-    reset() {
+    respawn() {
         this.body.checkCollision.none = false;
-        this.setPosition(Config.scale.width * Math.random(), Config.scale.height * Math.random());
+        // this.setPosition(Config.scale.width * Math.random(), Config.scale.height * Math.random());
         this.setActive(true);
         this.setVisible(true);
         this.shieldObject.show(true);
