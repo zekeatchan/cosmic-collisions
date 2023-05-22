@@ -65,7 +65,6 @@ export default class PreloaderScene extends Phaser.Scene {
 
     ready() {
             this.scene.launch(Config.scenes.Audio);
-            // this.scene.start(Config.scenes.Game);
             this.scene.start(Config.scenes.Title);
     }
 };
